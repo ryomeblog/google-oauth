@@ -1,6 +1,5 @@
 # Sample Google OAuth 2.0
 
-
 ## インフラ構成図
 
 ![](./img/infrastructure.png)
@@ -104,6 +103,35 @@ Expressサーバーは取得したユーザー情報をReactアプリケーシ�
 **ReactApp->>User: 12. Display User Info**: 
 
 最後に、Reactアプリケーションは取得したユーザー情報を表示します。
+
+## フォルダ構成
+
+```
+.
+└── google-oauth
+    ├── LICENSE
+    ├── README.md
+    ├── backend
+    │   ├── index.js
+    │   ├── package-lock.json
+    │   └── package.json
+    ├── frontend
+    │   └── sample-oauth
+    │       ├── package-lock.json
+    │       ├── package.json
+    │       ├── public
+    │       └── src
+    │           ├── App.js
+    │           ├── index.js
+    │           ├── ...etc
+    └── img
+```
+
+- `LICENSE`: MITライセンスファイル。
+- `README.md`: 本リポジトリ説明ファイル。
+- `backend`: Expressフレームワークを使用して記述されたLambda用コード。
+- `frontend`: Reactを使用して記述されたフロントエンドコード。
+- `img`: README.mdで使用する画像。
 
 
 ## 環境構築
@@ -277,3 +305,45 @@ npm start
 3. ログイン後、ユーザ情報が表示されれば成功
 
 ![](./img/22.png)
+
+## Google APIの説明
+
+以下のGoogle APIは、バックエンド側の実装で使用しています。
+
+- アクセストークンの取得: 
+  - エンドポイント（POST）: https://accounts.google.com/o/oauth2/auth
+
+| パラメータ    | 説明                                                                                                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| client_id     | クライアントID は、Google Cloud Platform プロジェクトに割り当てられた一意の識別子です。                                                                                                                                                                |
+| client_secret     | クライアントシークレット は、Google Cloud Platform プロジェクトに割り当てられた秘密鍵です。                                                                                                                                                                |
+| redirect_uri  | リダイレクトURI は、ユーザーがGoogle アカウントへのアクセスを許可または拒否した後にリダイレクトされるURLです。                                                                                                                                      |
+| code         | 認可コードは、ユーザーがGoogle アカウントへのアクセスを許可したときに認可エンドポイントから返されるコードです。                                                                                                                                                                                              |
+| grant_type | 認可コードをアクセストークンとリフレッシュトークンに交換する方法を示します。<br/>`authorization_code` は、認可コードフローで使用されます。<br/>`refresh_token` は、リフレッシュトークンを使用して新しいアクセストークンを取得するために使用されます。 |
+
+| ヘッダー | 説明 |
+| ------- | -------- |
+| Content-Type | `application/x-www-form-urlencoded` |
+
+```shell:curlコマンド
+curl -X POST \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=<クライアントID>" \
+  -d "client_secret=<クライアントシークレット>" \
+  -d "redirect_uri=<リダイレクト URI>" \
+  -d "code=<認可コード>" \
+  -d "grant_type=authorization_code" \
+  https://accounts.google.com/o/oauth2/token
+```
+
+- ユーザ情報の取得: 
+  - エンドポイント: https://www.googleapis.com/oauth2/v1/userinfo
+
+| ヘッダー   | 説明                                                                               |
+| ------------ | ---------------------------------------------------------------------------------- |
+| access_token | アクセストークンは、ユーザーの Google アカウントにアクセスするためのトークンです。 |
+
+```shell:curlコマンド
+curl -H "Authorization: Bearer <アクセストークン>" \
+  https://www.googleapis.com/oauth2/v1/userinfo
+```
